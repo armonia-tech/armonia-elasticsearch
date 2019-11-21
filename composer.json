@@ -1,0 +1,27 @@
+{
+    "name": "armonia-tech/armonia-elasticsearch",
+    "description": "Libraries for elastic search",
+    "keywords": ["armonia", "armonia tech", "elastic search"],
+    "homepage": "https://github.com/armonia-tech/armonia-search.git",
+    "license": "BSD-3-Clause", 
+    "config": {
+        "vendor-dir": "vendors",
+        "optimize-autoloader": true
+    },
+    "autoload": {
+        "psr-4": { "ArmoniaElasticSearch\\": "src/" }
+    },
+    "authors": [
+        {
+            "name": "Armonia Tech",
+            "email": "developer@armonia-tech.com"
+        }
+    ],
+    "require": {
+        "elasticsearch/elasticsearch": "~7.0"
+    },
+    "minimum-stability": "stable",
+    "require-dev": {
+        
+    }
+}
