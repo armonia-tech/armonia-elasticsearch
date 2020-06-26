@@ -18,7 +18,7 @@ class ElasticSearchEngine
     public function __construct(array $settings)
     {
         $this->elasticSearchClient = ClientBuilder::create()
-            ->setHost($settings['hosts'])
+            ->setHosts($settings['hosts'])
             ->setRetries($settings['retry'])
             ->build();
     }
@@ -30,7 +30,7 @@ class ElasticSearchEngine
      * @param  string $indexName
      * @return void
      */
-    public  function getIndexList(string $indexName)
+    public function getIndexList(string $indexName)
     {
         $params   = [
             'index' => $indexName,
@@ -48,17 +48,17 @@ class ElasticSearchEngine
      * @param  array $mappings
      * @return void
      */
-    public  function createIndex(string $indexName, array $settings = [], array $mappings = [])
+    public function createIndex(string $indexName, array $settings = [], array $mappings = [])
     {
         $params   = [
             'index' => $indexName,
             'body'  => [
-                'settings' => (!empty($settings))? $settings : $this->getDefaultIndexSettings()
+                'settings' => (!empty($settings))? $settings : $this->_getDefaultIndexSettings()
             ]
         ];
 
         if (!empty($mappings)) {
-            $params['body']['mappings'] = $mappings
+            $params['body']['mappings'] = $mappings;
         }
 
         $this->elasticSearchClient->indices()->create($params);
@@ -71,7 +71,7 @@ class ElasticSearchEngine
      * @param  string $indexName
      * @return void
      */
-    public  function deleteIndex(string $indexName)
+    public function deleteIndex(string $indexName)
     {
         $params   = [
             'index' => $indexName
@@ -87,13 +87,23 @@ class ElasticSearchEngine
      * @param  string $alias
      * @return array
      */
-    public  function getAlias(string $alias)
+    public function getAlias(string $alias)
     {
         $params   = [
             'name' => $alias
         ];
 
-        return $this->elasticSearchClient->indices()->getAlias($params);
+        try {
+            $alias = $this->elasticSearchClient->indices()->getAlias($params);
+        } catch (\Exception $e) {
+            if ($e->getCode() == 404) {
+                return [];
+            }
+
+            throw new \Exception($e);
+        }
+
+        return $alias;
     }
 
     /**
@@ -104,7 +114,7 @@ class ElasticSearchEngine
      * @param  string $alias
      * @return void
      */
-    public  function addAlias(string $indexName, string $alias)
+    public function addAlias(string $indexName, string $alias)
     {
         $params   = [
             'body'  => [
@@ -130,7 +140,7 @@ class ElasticSearchEngine
      * @param  string $alias
      * @return void
      */
-    public  function removeAlias(string $indexName, string $alias)
+    public function removeAlias(string $indexName, string $alias)
     {
         $params   = [
             'body'  => [
@@ -158,7 +168,7 @@ class ElasticSearchEngine
      * @param  string $idField default 'id'
      * @return void
      */
-    public  function addDoc(string $indexName, array $record = [], string $id = "", string $idField = 'id')
+    public function addDoc(string $indexName, array $record = [], string $id = "", string $idField = 'id')
     {
         $params = [
             'index' => $indexName
@@ -175,7 +185,7 @@ class ElasticSearchEngine
             $params['body']['doc'] = $record;
 
             $this->elasticSearchClient->update($params);
-        }  
+        }
     }
 
     /**
@@ -185,17 +195,16 @@ class ElasticSearchEngine
      * @param  string $indexName
      * @param  array $records
      * @param  string $idField default 'id'
-     * @return void
+     * @return array
      */
-    public  function addDocs(string $indexName, array $records = [], string $idField = 'id')
+    public function addDocs(string $indexName, array $records = [], string $idField = 'id')
     {
-        if (!count($records)){
+        if (!count($records)) {
             throw new \Exception('Elasticsearch.addDocs.noDocs: An empty records array was passed to the addDocs() method.');
         }
 
-        if (count($records))
-        {
-            for($i = 0; $i < count($records); $i++) {
+        if (count($records)) {
+            for ($i = 0; $i < count($records); $i++) {
                 $params['body'][] = [
                     'index' => [
                         '_index' => $indexName,
@@ -206,7 +215,7 @@ class ElasticSearchEngine
                 $params['body'][] = $records[$i];
             }
 
-            $this->elasticSearchClient->bulk($params);
+            return $this->elasticSearchClient->bulk($params);
         }
     }
 
@@ -218,10 +227,10 @@ class ElasticSearchEngine
      * @param  string $id
      * @return void
      */
-    public  function deleteDoc(string $indexName, string $id)
+    public function deleteDoc(string $indexName, string $id)
     {
         $params = [
-            'index' => $indexName
+            'index' => $indexName,
             'id'    => $id
         ];
 
@@ -234,29 +243,60 @@ class ElasticSearchEngine
      * @author Seon <keangsiang.pua@armonia-tech.com>
      * @param  string $indexName
      * @param  array  $query
-     * @param  string $from
-     * @param  string $indexName
+     * @param  int $from
+     * @param  int $size
+     * @param  array $sort
      * @return array
      */
-    public  function search(
-        string $indexName, 
+    public function search(
+        string $indexName,
         array  $query = [],
-        string $from  = 0,
-        string $size  = 10,
-        string $sort  = ["_score"]
-    )
-    {
+        int $from = 0,
+        int $size = 10,
+        array $sort = ["_score"]
+    ) {
+        $body = [
+            'from'  => $from,
+            'size'  => $size,
+            'sort'  => $sort
+        ];
+
+        if (!empty($query)) {
+            $body['query'] = $query;
+        }
+
         $params = [
-            'index' => $indexName
-            'body'  => [
-                'query' => $query,
-                'from'  => $from,
-                'size'  => $size,
-                'sort'  => $sort
-            ]
+            'index' => $indexName,
+            'body'  => $body
         ];
 
         return $this->elasticSearchClient->search($params);
     }
 
+    /**
+     * Search
+     *
+     * @author Seon <keangsiang.pua@armonia-tech.com>
+     * @return array
+     */
+    public function isElasticSearchAvailable()
+    {
+        $params = [];
+
+        try {
+            $response = $this->elasticSearchClient->ping($params);
+        } catch (\Exception $e) {
+            $response = false;
+        }
+
+        return $response;
+    }
+
+    private function _getDefaultIndexSettings()
+    {
+        return [
+            'number_of_shards'   => 1,
+            'number_of_replicas' => 0
+        ];
+    }
 }
