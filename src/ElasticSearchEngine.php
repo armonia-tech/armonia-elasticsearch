@@ -253,7 +253,8 @@ class ElasticSearchEngine
         array  $query = [],
         int $from = 0,
         int $size = 10,
-        array $sort = ["_score"]
+        array $sort = ["_score"],
+        array $aggs = []
     ) {
         $body = [
             'from'  => $from,
@@ -263,6 +264,10 @@ class ElasticSearchEngine
 
         if (!empty($query)) {
             $body['query'] = $query;
+        }
+
+        if (!empty($aggs)) {
+            $body['aggs'] = $aggs;
         }
 
         $params = [

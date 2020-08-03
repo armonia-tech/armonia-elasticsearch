@@ -5,8 +5,8 @@ class ElasticSearchResult
 {
     public function newSearchResult(
         array $rawResult,
-        int $page,
-        int $pageSize,
+        int $page = 0,
+        int $pageSize = 10,
         string $highlightFields = "",
         string $q = ""
     ) :array {
