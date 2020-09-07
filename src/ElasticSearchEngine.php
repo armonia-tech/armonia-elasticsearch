@@ -234,7 +234,7 @@ class ElasticSearchEngine
             'id'    => $id
         ];
 
-        $this->elasticSearchClient->delete($params);
+        return $this->elasticSearchClient->delete($params);
     }
 
     /**
