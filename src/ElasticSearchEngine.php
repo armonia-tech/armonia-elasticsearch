@@ -238,6 +238,24 @@ class ElasticSearchEngine
     }
 
     /**
+     * Delete Doc By Query
+     *
+     * @author Seon <keangsiang.pua@armonia-tech.com>
+     * @param  string $indexName
+     * @param  array $body
+     * @return void
+     */
+    public function deleteByQuery(string $indexName, array $body)
+    {
+        $params = [
+            'index' => $indexName,
+            'body'  => $body
+        ];
+
+        return $this->elasticSearchClient->deleteByQuery($params);
+    }
+
+    /**
      * Search
      *
      * @author Seon <keangsiang.pua@armonia-tech.com>
