@@ -268,6 +268,7 @@ class ElasticSearchEngine
      */
     public function search(
         string $indexName,
+        array $source = [],
         array  $query = [],
         int $from = 0,
         int $size = 10,
@@ -286,6 +287,10 @@ class ElasticSearchEngine
 
         if (!empty($aggs)) {
             $body['aggs'] = $aggs;
+        }
+
+        if (!empty($source)) {
+            $body['_source'] = $source;
         }
 
         $params = [
