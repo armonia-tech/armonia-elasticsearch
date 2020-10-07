@@ -278,7 +278,8 @@ class ElasticSearchEngine
         $body = [
             'from'  => $from,
             'size'  => $size,
-            'sort'  => $sort
+            'sort'  => $sort,
+            'track_total_hits' => true
         ];
 
         if (!empty($query)) {
