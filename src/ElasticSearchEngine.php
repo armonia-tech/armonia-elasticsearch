@@ -157,7 +157,41 @@ class ElasticSearchEngine
 
         $this->elasticSearchClient->indices()->updateAliases($params);
     }
-    
+
+    /**
+     * Get Mapping
+     *
+     * @author Shin Shen <shinshen.yeoh@armonia-tech.com>
+     * @param string $indexName
+     * @return array
+     */
+    public function getMapping(string $indexName)
+    {
+        $params = [
+            'index' => $indexName,
+        ];
+
+        return $this->elasticSearchClient->indices()->getMapping($params);
+    }
+
+    /**
+     * Put Mapping
+     *
+     * @author Shin Shen <shinshen.yeoh@armonia-tech.com>
+     * @param string $indexName
+     * @param array $mappingBody
+     * @return void
+     */
+    public function putMapping(string $indexName, array $mappingBody)
+    {
+        $params = [
+            'index' => $indexName,
+            'body' => $mappingBody,
+        ];
+
+        $this->elasticSearchClient->indices()->putMapping($params);
+    }
+
     /**
      * Add / Update Doc
      *
