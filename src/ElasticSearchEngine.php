@@ -163,9 +163,9 @@ class ElasticSearchEngine
      *
      * @author Shin Shen <shinshen.yeoh@armonia-tech.com>
      * @param string $aliasName
-     * @return array
+     * @return bool
      */
-    public function existAlias(string $aliasName)
+    public function existAlias(string $aliasName): bool
     {
         $params = [
             'name' => $aliasName
