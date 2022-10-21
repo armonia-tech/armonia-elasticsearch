@@ -159,6 +159,22 @@ class ElasticSearchEngine
     }
 
     /**
+     * Exist Alias
+     *
+     * @author Shin Shen <shinshen.yeoh@armonia-tech.com>
+     * @param string $aliasName
+     * @return array
+     */
+    public function existAlias(string $aliasName)
+    {
+        $params = [
+            'name' => $aliasName
+        ];
+
+        return $this->elasticSearchClient->indices()->existsAlias($params);
+    }
+
+    /**
      * Get Mapping
      *
      * @author Shin Shen <shinshen.yeoh@armonia-tech.com>
