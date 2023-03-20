@@ -209,6 +209,29 @@ class ElasticSearchEngine
     }
 
     /**
+     * Put Settings
+     *
+     * @author Wilson <huanyong.chan@armonia-tech.com>
+     * @param string $indexName
+     * @param array $settingBody
+     * @return void
+     */
+    public function putSettings(string $indexName, array $settingBody)
+    {
+        // remove settings doesnt allow to update
+        unset($settingBody['number_of_shards']);
+
+        $params = [
+            'index' => $indexName,
+            'body' => $settingBody,
+        ];
+
+        $this->elasticSearchClient->indices()->close(['index' => $indexName]);
+        $this->elasticSearchClient->indices()->putSettings($params);
+        $this->elasticSearchClient->indices()->open(['index' => $indexName]);
+    }
+
+    /**
      * Add / Update Doc
      *
      * @author Seon <keangsiang.pua@armonia-tech.com>

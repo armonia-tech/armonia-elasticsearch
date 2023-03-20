@@ -51,7 +51,7 @@ class ElasticSearchResult
         foreach ($hits as $hitIndex => $hit) {
             $data = $hit['_source'];
 
-            $data['type']  = $hit['_type'];
+            $data['type']  = $hit['_type'] ?? '';
             $data['score'] = (!empty($hit['_score']))? $hit['_score'] : 0;
 
             foreach ($highlights as $highlight) {
