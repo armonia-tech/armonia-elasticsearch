@@ -298,14 +298,19 @@ class ElasticSearchEngine
      * @author Seon <keangsiang.pua@armonia-tech.com>
      * @param  string $indexName
      * @param  string $id
+     * @param  bool|string $refresh optional default false, value=true,false,wait_for
      * @return void
      */
-    public function deleteDoc(string $indexName, string $id)
+    public function deleteDoc(string $indexName, string $id, $refresh = false)
     {
         $params = [
             'index' => $indexName,
             'id'    => $id
         ];
+
+        if ($refresh !== false) {
+            $params['refresh'] = $refresh;
+        }
 
         return $this->elasticSearchClient->delete($params);
     }
