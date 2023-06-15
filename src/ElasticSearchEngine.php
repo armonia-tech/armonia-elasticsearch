@@ -94,7 +94,7 @@ class ElasticSearchEngine
         ];
 
         try {
-            $alias = $this->elasticSearchClient->indices()->getAlias($params);
+            $output = $this->elasticSearchClient->indices()->getAlias($params);
         } catch (\Exception $e) {
             if ($e->getCode() == 404) {
                 return [];
@@ -103,7 +103,7 @@ class ElasticSearchEngine
             throw new \Exception($e);
         }
 
-        return $alias;
+        return $output;
     }
 
     /**
@@ -381,22 +381,22 @@ class ElasticSearchEngine
     }
 
     /**
-     * Search
+     * Is Elastic Search Available
+     *
+     * Check if elastic search is available by using ping API.
+     *
+     * Return type is always bool based on internal client spec but exception
+     * will be thrown if there are failure.
      *
      * @author Seon <keangsiang.pua@armonia-tech.com>
-     * @return array
+     * @return bool true if success
+     * @throws Exception
      */
-    public function isElasticSearchAvailable()
+    public function isElasticSearchAvailable(): bool
     {
         $params = [];
 
-        try {
-            $response = $this->elasticSearchClient->ping($params);
-        } catch (\Exception $e) {
-            $response = false;
-        }
-
-        return $response;
+        return $this->elasticSearchClient->ping($params);
     }
 
     private function _getDefaultIndexSettings()
