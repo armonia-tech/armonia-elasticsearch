@@ -1,12 +1,12 @@
 <?php
 namespace ArmoniaElasticSearch;
 
-use Elasticsearch\ClientBuilder;
+use Elastic\Elasticsearch\ClientBuilder;
+use Elastic\Elasticsearch\Client;
 
 class ElasticSearchEngine
 {
-    private $elasticSearchSetting;
-    private $elasticSearchClient;
+    private Client $elasticSearchClient;
 
     /**
      * Construct
@@ -342,6 +342,9 @@ class ElasticSearchEngine
      * @param  int $from
      * @param  int $size
      * @param  array $sort
+     * @param  array $aggs
+     * @param  string $scroll
+     * @param  array $search_after
      * @return array
      */
     public function search(
@@ -351,14 +354,20 @@ class ElasticSearchEngine
         int $from = 0,
         int $size = 10,
         array $sort = ["_score"],
-        array $aggs = []
+        array $aggs = [],
+        string $scroll = '',
+        array $search_after = [],
+        array $pit = []
     ) {
         $body = [
-            'from'  => $from,
             'size'  => $size,
             'sort'  => $sort,
             'track_total_hits' => true
         ];
+
+        if (!empty($from)) {
+            $body['from'] = $from;
+        }
 
         if (!empty($query)) {
             $body['query'] = $query;
@@ -372,12 +381,52 @@ class ElasticSearchEngine
             $body['_source'] = $source;
         }
 
+        if (!empty($search_after)) {
+            $body['search_after'] = $search_after;
+        }
+
         $params = [
             'index' => $indexName,
             'body'  => $body
         ];
 
+        if (!empty($scroll)) {
+            $params['scroll'] = $scroll;
+        }
+
+        if (!empty($pit)) {
+            $params['pit'] = $pit;
+        }
+
         return $this->elasticSearchClient->search($params);
+    }
+
+    /**
+     * Open Point In Time
+     *
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/master/point-in-time-api.html
+     * @author Shin Shen <shinshen.yeoh@armonia-tech.com>
+     * @param array  $params
+     */
+    public function openPointInTime(string $index_name, string $keep_alive, array $params = []) {
+        $params['index'] = $index_name;
+        $params['keep_alive'] =$keep_alive;
+        return $this->elasticSearchClient->openPointInTime($params)->asArray();
+    }
+
+    /**
+     * Scroll
+     *
+     * Remark: currently only support passing scroll_id. All customizations are
+     * disabled
+     *
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/master/search-request-body.html#request-body-search-scroll
+     * @param string $scroll_id
+     * @return array
+     */
+    public function scroll(string $scroll_id) {
+        $params = ['scroll_id' => $scroll_id];
+        return $this->elasticSearchClient->scroll($params);
     }
 
     /**
