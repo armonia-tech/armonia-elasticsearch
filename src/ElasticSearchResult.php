@@ -22,7 +22,7 @@ class ElasticSearchResult
             $args['total_results']         = $rawResult['hits']['total']['value'];
             $args['total_result_relation'] = $rawResult['hits']['total']['relation'];
             $args['results']               = $this->_hitsToResults($rawResult['hits']['hits'], $highlightFields);
-            
+
             if (!empty($rawResult['facets'])) {
                 $args['facets'] = $this->_transformFacets($rawResult['facets']);
             }
@@ -33,6 +33,10 @@ class ElasticSearchResult
 
             if (!empty($rawResult['suggest'])) {
                 $args['suggestions'] = $rawResult['suggest'];
+            }
+
+            if (!empty($rawResult['_scroll_id'])) {
+                $args['_scroll_id'] = $rawResult['_scroll_id'];
             }
         }
 
@@ -57,7 +61,11 @@ class ElasticSearchResult
             foreach ($highlights as $highlight) {
                 $data[$highlight."_highlight"] = (!empty($hit['highlight']))? $this->_formatHighlight($hit['highlight'], $highlight) : "";
             }
-            
+
+            if (!empty($hit['sort'])) {
+                $data['sort'] = $hit['sort'];
+            }
+
             $results[] = $data;
         }
 
