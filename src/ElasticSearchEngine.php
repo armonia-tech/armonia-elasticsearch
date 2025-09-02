@@ -2,11 +2,11 @@
 namespace ArmoniaElasticSearch;
 
 use Elasticsearch\ClientBuilder;
+use Elasticsearch\Client;
 
 class ElasticSearchEngine
 {
-    private $elasticSearchSetting;
-    private $elasticSearchClient;
+    private Client $elasticSearchClient;
 
     /**
      * Construct
@@ -342,6 +342,9 @@ class ElasticSearchEngine
      * @param  int $from
      * @param  int $size
      * @param  array $sort
+     * @param  array $aggs
+     * @param  string $scroll
+     * @param  array $search_after
      * @return array
      */
     public function search(
@@ -351,14 +354,19 @@ class ElasticSearchEngine
         int $from = 0,
         int $size = 10,
         array $sort = ["_score"],
-        array $aggs = []
+        array $aggs = [],
+        string $scroll = '',
+        array $search_after = []
     ) {
         $body = [
-            'from'  => $from,
             'size'  => $size,
             'sort'  => $sort,
             'track_total_hits' => true
         ];
+
+        if (!empty($from)) {
+            $body['from'] = $from;
+        }
 
         if (!empty($query)) {
             $body['query'] = $query;
@@ -372,12 +380,35 @@ class ElasticSearchEngine
             $body['_source'] = $source;
         }
 
+        if (!empty($search_after)) {
+            $body['search_after'] = $search_after;
+        }
+
         $params = [
             'index' => $indexName,
             'body'  => $body
         ];
 
+        if (!empty($scroll)) {
+            $params['scroll'] = $scroll;
+        }
+
         return $this->elasticSearchClient->search($params);
+    }
+
+    /**
+     * Scroll
+     *
+     * Remark: currently only support passing scroll_id. All customizations are
+     * disabled
+     *
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/master/search-request-body.html#request-body-search-scroll
+     * @param string $scroll_id
+     * @return array
+     */
+    public function scroll(string $scroll_id) {
+        $params = ['scroll_id' => $scroll_id];
+        return $this->elasticSearchClient->scroll($params);
     }
 
     /**
