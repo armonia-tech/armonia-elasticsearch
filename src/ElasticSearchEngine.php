@@ -407,7 +407,11 @@ class ElasticSearchEngine
      * @return array
      */
     public function scroll(string $scroll_id) {
-        $params = ['scroll_id' => $scroll_id];
+        $params = [
+            'body' => [
+                'scroll_id' => $scroll_id
+            ]
+        ];
         return $this->elasticSearchClient->scroll($params);
     }
 
